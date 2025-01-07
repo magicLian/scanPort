@@ -40,15 +40,13 @@ func main() {
 		usage("scanPort version: scanPort/v2.1\n Usage: scanPort [-h] [-ip ip地址] [-n 进程数] [-p 端口号范围] [-t 超时时长] [-path 日志保存路径]\n\nOptions:\n")
 		return
 	}
-	serverUri := "https://ip.xs25.cn"
-	//serverUri:=fmt.Sprintf("http://127.0.0.1:%d",*port)
-	//openErr := open(serverUriOsInfo(serverUri))
+	serverUri := fmt.Sprintf("http://127.0.0.1:%d", *port)
 	openErr := open(serverUri)
 	if openErr != nil {
 		fmt.Println(openErr, serverUri)
 	}
 	//绑定路由地址
-	http.HandleFunc("/", indexHandle)
+	http.Handle("/", http.FileServer(http.Dir("app/ui")))
 	http.HandleFunc("/run", runHandle)
 	http.HandleFunc("/ws", wsHandle)
 
@@ -58,14 +56,14 @@ func main() {
 	http.ListenAndServe(addr, nil)
 }
 
-//首页
+// 首页
 func indexHandle(w http.ResponseWriter, r *http.Request) {
-	s := "小手端口扫描 " + version + " (by:Duzhenxun)"
-	w.Write([]byte(s))
-	//http.FileServer(http.Dir("app/ui"))
+	// s := "小手端口扫描 " + version + " (by:Duzhenxun)"
+	// w.Write([]byte(s))
+	http.FileServer(http.Dir("app/ui"))
 }
 
-//运行
+// 运行
 func runHandle(w http.ResponseWriter, r *http.Request) {
 	resp := map[string]interface{}{
 		"code": 200,
@@ -135,7 +133,7 @@ func runHandle(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//ws服务
+// ws服务
 func wsHandle(w http.ResponseWriter, r *http.Request) {
 	wsUp := websocket.Upgrader{
 		HandshakeTimeout: time.Second * 5,
@@ -164,7 +162,7 @@ func wsHandle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//系统信息
+// 系统信息
 func serverUriOsInfo(serverUri string) string {
 	osInfo := map[string]interface{}{}
 	osInfo["version"] = version
